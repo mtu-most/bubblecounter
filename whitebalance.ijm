@@ -1,0 +1,98 @@
+// current image location and name
+var s_directory, s_name, s_results, s_properties, s_traverses;
+s_directory = getInfo("image.directory");
+s_name = getInfo("image.filename");
+s_results = s_directory + replace(s_name, ".tif", "_bcResults.txt"); //  name of results file
+s_properties = s_directory + replace(s_name, ".tif", "_bcProps.txt"); //  name of results file
+s_traverses = s_directory + replace(s_name, ".tif", "_traverses.txt"); //  name of traverses image file
+
+// silent mode supresses messages:
+silentMode = false;
+
+macro "whiteBalance" {
+	// vars for histogram data
+	ibins = 256;
+	i_modeBlack = -1;
+	i_modeWhite = -1;
+	i_countsBlack = -1;
+	i_countsWhite = -1;
+	// white balance card selection area dims
+	var i_wb_x,  i_wb_y,  i_wb_w,  i_wb_h;
+
+	// everything will be stored in IJ's List object, clear it
+	List.clear;
+
+	// make sure a region is selected
+	h = getHeight();
+	getSelectionBounds(i_wb_x,  i_wb_y,  i_wb_w,  i_wb_h);
+
+	if (h != i_wb_h) {
+		// check if wb file already exists
+		if (File.exists(s_properties)) {
+			showMessageWithCancel("File Exists", "The white balance has already been determined for the image. Clicking OK will overwrite existing file.");
+		}
+
+		getPixelSize(unit, pw, ph, pd);
+		if (unit == "inches") {
+			unit = "microns";
+			pw = pw * 25400;
+			ph = ph * 25400;
+		}
+
+		// get the histogram for the selection
+		getHistogram(i_histValues, i_histCounts, ibins);
+		// iterate through the histogram data from top and bottom and ID modes for black and white
+		for (i = 0; i < floor(ibins / 2); i++) {
+			if (i_histCounts[i] > i_countsBlack) {
+				i_countsBlack = i_histCounts[i];
+				i_modeBlack = i_histValues[i];
+			}
+
+			if (i_histCounts[255 - i] > i_countsWhite) {
+				i_countsWhite = i_histCounts[255 - i];
+				i_modeWhite = i_histValues[255 - i];
+			}
+		}
+
+
+		List.set("nameFileOriginal", s_name);
+		List.set("unit", unit);
+		List.set("pixelWidth", pw);
+		List.set("pixelHeight", ph);
+		List.set("pixelDepth", pd);
+		List.set("boundsWhiteBalance", i_wb_x + "," + i_wb_y + "," + i_wb_w + "," + i_wb_h);
+		List.set("modeBlack", i_modeBlack);
+		List.set("modeWhite", i_modeWhite);
+
+		// write the List object to a file
+		writeProps();
+
+		if (!silentMode) showMessage("The white balance has been determined:\nBlack mode: " + i_modeBlack + "\nWhite mode: " + i_modeWhite);
+	}
+	else {
+		showMessage("Select a region of the white balance card and rerun the macro.");
+	}
+} // end macro WhiteBalance
+
+macro "analyze" {
+
+}
+
+// writes the current List object to the properties file
+function writeProps() {
+		f = File.open(s_properties);
+		print(f, List.getList);
+		File.close(f);
+}
+
+// creates a comma separated value string from the values in the supplied array:
+function a_to_csv(a) {
+	s = "";
+	for (i = 0; i < a.length - 1; i++)
+		s = s + a[i] + ",";
+
+	s = s + a[a.length -1];
+
+	return s;
+}
+
