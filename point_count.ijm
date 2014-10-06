@@ -72,7 +72,7 @@ if (h != i_a_h) {
 			// select a rectangle prompt the user if arrow point over aggregate
 			makeRectangle(x - 0.5 * i_roi_edge, y - 0.5 * i_roi_edge, 2 * i_roi_edge, 2 * i_roi_edge);
 			run("To Selection");
-			if(getBoolean("Region " + i_current + "/" + i_samples + "\n" + i_aggregate / i_current + " aggregate fraction\n \nIs the arrow point on aggregate?"))
+			if(getBoolean("Region " + i_current + "/" + i_x_steps * i_y_steps + "\nAggregate = " + i_aggregate + "\nPoints = " + i_current + "\n" + i_aggregate / i_current + " aggregate fraction\n \nIs the arrow point on aggregate?"))
 				i_aggregate += 1;
 			i_current++;
 		}
@@ -80,9 +80,9 @@ if (h != i_a_h) {
 
 	// write the results to the results file and prompt the user with aggregate fraction
 	s_report = "Aggregate point count results for " + s_name + "\n";
-	s_report += "Total points," + i_samples + "\n";
+	s_report += "Total points," + i_current + "\n";
 	s_report += "Total points on aggregate," + i_aggregate + "\n";
-	s_report += "Aggregate fraction," + i_aggregate / (i_current - 1);
+	s_report += "Aggregate fraction," + i_aggregate / i_current;
 	f = File.open(s_results);
 	print(f, s_report);
 	File.close(f);
