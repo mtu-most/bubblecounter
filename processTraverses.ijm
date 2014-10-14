@@ -131,7 +131,7 @@ if (File.exists(s_traverses)) {
 		if (f_pasteToAir <= 4.342)
 			f_spacingFactor = f_pasteToAir * f_mmLengthMean / 4;
 		else
-			f_spacingFactor = (3 / 4) * f_mmLengthMean * (1.4 * pow(1 + f_pasteToAir, 1 / 3));
+			f_spacingFactor = (3 / 4) * f_mmLengthMean * (1.4 * pow(1 + f_pasteToAir, 1 / 3) - 1);
 	}
 
 //		if (File.separator == "\\") s_traverses = replace(List.getList, "\\", "/");
