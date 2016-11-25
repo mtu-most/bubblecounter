@@ -52,11 +52,31 @@ macro "whiteBalance" {
 		}
 
 		getPixelSize(unit, pw, ph, pd);
+		
 		if (unit == "inches") {
 			unit = "microns";
 			pw = pw * 25400;
 			ph = ph * 25400;
 		}
+
+
+		// ask the user if the scanner resolution and pixel resolution matches, added July 14, 2016 by Tianqing and Junbo, because sometimes the resolution data
+		// read by WhiteBalance is messed up.
+		
+		f_converter = 39.37; // 1 dpi = 39.37 dpm
+		i_dpi = 25400 / pw;
+		i_dpm = round(f_converter * i_dpi);
+
+		Dialog.create("Scanner Information");
+		Dialog.addMessage("Scanner resolution: \n" + i_dpi + " dpi\n" + i_dpm + " dpm\n" + "Pixel Resolution: " + pw + " X " + ph + " microns\nIf the information above is correct, click OK;\nif the information above is not correct, enter the correct value below: ");
+		Dialog.addNumber("Scanner Resolution (dpi): ", i_dpi); // 1
+		Dialog.show();
+
+		i_dpi = Dialog.getNumber(); // 1
+	
+		pw = 25400 / i_dpi;
+		ph = pw;
+		unit = "microns";
 
 		// get the histogram for the selection
 		getHistogram(i_histValues, i_histCounts, ibins);
@@ -82,6 +102,7 @@ macro "whiteBalance" {
 		List.set("boundsWhiteBalance", i_wb_x + "," + i_wb_y + "," + i_wb_w + "," + i_wb_h);
 		List.set("modeBlack", i_modeBlack);
 		List.set("modeWhite", i_modeWhite);
+		// List.set("ChordCutoff", i_chordCutoff);
 
 		// write the List object to a file
 		writeProps();
@@ -114,4 +135,5 @@ function a_to_csv(a) {
 
 	return s;
 }
+
 
